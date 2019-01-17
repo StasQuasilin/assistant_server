@@ -44,7 +44,7 @@ public class Hibernator {
     }
 
     HashMap<String, Object> params = new HashMap<>();
-    public <T> T get(Class<T> tClass, String key, String value) {
+    public <T> T get(Class<T> tClass, String key, Object value) {
         params.clear();
         params.put(key, value);
         List<T> query = Query(tClass, params);
@@ -59,5 +59,17 @@ public class Hibernator {
         params.clear();
         params.put(key, value);
         return Query(tClass, params);
+    }
+
+    public void save(Object o) {
+        Session session = HibernateSessionFactory.getSessionFactory().openSession();
+        session.saveOrUpdate(o);
+        session.beginTransaction().commit();
+    }
+
+    public void remove(Object o) {
+        Session session = HibernateSessionFactory.getSessionFactory().openSession();
+        session.remove(o);
+        session.beginTransaction().commit();
     }
 }
