@@ -49,34 +49,38 @@ public class ContactEdit extends HttpServlet {
         String[] keys = req.getParameterValues("key");
         String[] values = req.getParameterValues("value");
 
-        List<Detail> details = hibernator.Query(Detail.class, "contact", contact);
-        List<Detail> saveList = new LinkedList<>();
+        if (keys != null) {
 
-        for (int i = 0; i < keys.length; i++) {
-            Detail detail = null;
-            try {
-                int detailId = Integer.parseInt(detail_ids[i]);
-                for(Detail d : details){
-                    if (d.getId() == detailId){
-                        detail = d;
-                        break;
+            List<Detail> details = hibernator.Query(Detail.class, "contact", contact);
+            List<Detail> saveList = new LinkedList<>();
+
+            for (int i = 0; i < keys.length; i++) {
+                Detail detail = null;
+                try {
+                    int detailId = Integer.parseInt(detail_ids[i]);
+                    for (Detail d : details) {
+                        if (d.getId() == detailId) {
+                            detail = d;
+                            break;
+                        }
                     }
+                } catch (Exception ignored) {
+                    detail = new Detail();
                 }
-            }catch (Exception ignored){
-                detail = new Detail();
+                details.remove(detail);
+
+                assert detail != null;
+                saveList.add(detail);
+                detail.setContact(contact);
+                detail.setKey(keys[i]);
+                detail.setValue(values[i]);
             }
-            details.remove(detail);
 
-            assert detail != null;
-            saveList.add(detail);
-            detail.setContact(contact);
-            detail.setKey(keys[i]);
-            detail.setValue(values[i]);
+            details.forEach(hibernator::remove);
+            saveList.forEach(hibernator::save);
+            details.clear();
+            saveList.clear();
         }
-
-        details.forEach(hibernator::remove);
-        saveList.forEach(hibernator::save);
         resp.sendRedirect(req.getContextPath() + "/admin.j");
-
     }
 }
